@@ -72,38 +72,40 @@ open class CDMarkdownLink: CDMarkdownLinkElement {
                                  toRange: range)
     }
 
-    open func match(_ match: NSTextCheckingResult,
-                    attributedString: NSMutableAttributedString) {
-        guard match.numberOfRanges == 3 else { return }
+	open func match(_ match: NSTextCheckingResult,
+					attributedString: NSMutableAttributedString) {
+		guard match.numberOfRanges == 3 else { return }
 
-        let nsString = attributedString.string as NSString
-        let linkStartInResult = nsString.range(of: "(",
-                                               options: .backwards,
-                                               range: match.range).location
-        let linkRange = NSRange(location: linkStartInResult,
-                                length: match.range.length + match.range.location - linkStartInResult - 1)
-        let linkURLString = nsString.substring(with: NSRange(location: linkRange.location + 1,
-                                                             length: linkRange.length - 1))
+		let nsString = attributedString.string as NSString
+		let linkStartInResult = nsString.range(of: "(",
+											   options: .backwards,
+											   range: match.range).location
+		let linkRange = NSRange(location: linkStartInResult,
+								length: match.range.length + match.range.location - linkStartInResult - 1)
+		let linkURLString = nsString.substring(with: NSRange(location: linkRange.location + 1,
+															 length: linkRange.length - 1))
 
-        // deleting trailing markdown
-        // needs to be called before formattingBlock to support modification of length
-        attributedString.deleteCharacters(in: NSRange(location: linkRange.location - 1,
-                                                      length: linkRange.length + 2))
+		// deleting trailing markdown
+		// needs to be called before formattingBlock to support modification of length
+		attributedString.deleteCharacters(in: NSRange(location: linkRange.location - 1,
+													  length: linkRange.length + 2))
 
-        // deleting leading markdown
-        // needs to be called before formattingBlock to provide a stable range
-        attributedString.deleteCharacters(in: NSRange(location: match.range.location + 1,
-                                                      length: 1))
-        let formatRange = NSRange(location: match.range.location + 1,
-                                  length: linkStartInResult - match.range.location - 3)
+		// deleting leading markdown
+		// needs to be called before formattingBlock to provide a stable range
+		attributedString.deleteCharacters(in: NSRange(location: 0,
+													  length: 1))
+		let formatRange = NSRange(location: 0,
+								  length: attributedString.length)
 
-        formatText(attributedString,
-                   range: formatRange,
-                   link: linkURLString)
-        addAttributes(attributedString,
-                      range: formatRange,
-                      link: linkURLString)
-    }
+		attributedString.addAttribute(NSAttributedString.Key.underlineStyle, value: NSUnderlineStyle.styleSingle.rawValue, range: NSMakeRange(0, attributedString.length))
+		// For some reason this is breaking the formatting but seeing as we aren't supporting links yet this can wait
+		//        formatText(attributedString,
+		//                   range: formatRange,
+		//                   link: linkURLString)
+		addAttributes(attributedString,
+					  range: formatRange,
+					  link: linkURLString)
+	}
 
     open func addAttributes(_ attributedString: NSMutableAttributedString,
                             range: NSRange,
